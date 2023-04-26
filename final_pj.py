@@ -1,11 +1,16 @@
 import pandas as pd
 import string
 import re
+import nltk
+from nltk.corpus import stopwords
+nltk.download('stopwords')
+
 
 def clean_text(text):
     """
     Cleans the description text. 
-    Removes numbers, punctuation, and converts to lower case.
+    Removes numbers, punctuation, stopwords, converts to lower case, 
+    remove stopwords and whitespace.
 
     Args:
         text (String): description to be cleaned
@@ -22,6 +27,12 @@ def clean_text(text):
 
     # lower case
     clean = clean.lower()
+
+    # remove stop words
+    stop_words = set(stopwords.words('english'))
+    words = clean.split()
+    filtered_words = [word for word in words if word.casefold() not in stop_words]
+    clean = " ".join(filtered_words)
 
     # remove whitespace
     clean = " ".join(clean.split())
