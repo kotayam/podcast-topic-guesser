@@ -1,60 +1,38 @@
-import torch
-import numpy
+import pandas as pd
+import string
+import re
 
-def load_data():
+def clean_text(text):
     """
-    Load the CelebA data and apply the appropriate transfromations.
-    """
-    raise NotImplementedError
-
-def show_random_celeba():
-    """
-    Displays random CelebA examples.
-    """
-    raise NotImplementedError
-
-def create_fnn(in_size, num_classes):
-    """
-    Create a fully connected neural network.
+    Cleans the description text. 
+    Removes numbers, punctuation, and converts to lower case.
 
     Args:
-        in_size (int): the input size of the network, should match data shape
-        num_classes (int): the # of classes, which is the network output size
-    
+        text (String): description to be cleaned
+
     Returns:
-        fnn (nn.Sequential): the fully connected network whose input is of
-        size in_size and output is of size num_classes
+        String: cleaned description
     """
-    raise NotImplementedError
+    # remove numbers
+    clean = re.sub(r"\d", "", text)
 
-def compute_accuracy(net, dataloader):
-    """
-    Return the accuracy of the network on all data points in the dataloader.
-    This is the sum of the number of correct predictions divided by the total 
-    number of samples in the dataloader.
+    # remove punctuation
+    translator = str.maketrans("", "", string.punctuation)
+    clean = clean.translate(translator)
 
-    Args:
-        net (nn.Sequential): the network to compute the accuracy of
-        dataloader (utils.DataLoader): a dataloader to compute accuracy over
-        device (str): the device to send Tensors to
-    
-    Returns:
-        float: the net's accuracy on the data from dataloader
-    """
-    raise NotImplementedError
+    # lower case
+    clean = clean.lower()
 
-def train_nn(net, trainloader, validloader, eval_freq, num_epochs):
-    """
-    """
-    raise NotImplementedError
+    # remove whitespace
+    clean = " ".join(clean.split())
 
-def create_acc_curve(train_acc, valide_acc, eval_freq):
-    """
-    """
-    raise NotImplementedError
+    return clean
 
-def predict(image):
-    """
-    Predicts from the given image.
-    """
-    raise NotImplementedError
+if __name__ == "__main__":
+    # Read data
+    podcasts = pd.read_csv("poddf.csv")
+    print(podcasts.head())
+
+    # clean description
+    podcasts["clean_desc"] = podcasts["Description"].apply(clean_text)
+    print(podcasts.head(10))
