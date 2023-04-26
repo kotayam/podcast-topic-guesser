@@ -1,0 +1,2 @@
+I will create a face attribute recognition app, which given a image of a person, it will output his/her face attribute such as eyeglasses, bangs, mustache, etc.
+I will use pytorch and numpy to create the model and use the CelebA dataset as the training and test sets. (http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html)
