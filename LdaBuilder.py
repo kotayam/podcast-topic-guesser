@@ -7,6 +7,7 @@ nltk.download('stopwords')
 from wordcloud import WordCloud
 import gensim
 import gensim.corpora as corpora
+from gensim.corpora import Dictionary
 from gensim.models.coherencemodel import CoherenceModel
 
 class LdaBuilder:
@@ -25,7 +26,6 @@ class LdaBuilder:
         
         """
         clean_texts = [LdaBuilder.clean_text_helper(text) for text in self.texts]
-        print(clean_texts[0:10])
         return clean_texts
 
     def clean_text_helper(text):
@@ -115,6 +115,9 @@ class LdaBuilder:
         id2word = corpora.Dictionary(data_words)
         self.id2word = id2word
 
+        # save the dictionary
+        id2word.save("lda_dictionary")
+
         # create corpus
         texts = data_words
 
@@ -168,26 +171,6 @@ class LdaBuilder:
         """
         self.lda_model.save("lda_model")
 
-    def predict(self, query):
-        """
-        """
-        query_data = query
-        bow_query_data = self.id2word.doc2bow(query_data.lower().split())
-        query_topic = self.lda_model[bow_query_data]
-
-        max_i = -1
-        max_p = 0
-        for idx, prob in query_topic[0]:
-            if prob > max_p:
-                max_p = prob
-                max_i = idx
-        
-        return "Topic: {}, Probability: {}".format(max_i, max_p)
-        
-
-
-
-
 if __name__ == "__main__":
     # Read data
     podcasts = pd.read_csv("poddf.csv")
@@ -203,18 +186,7 @@ if __name__ == "__main__":
     print(lda_model)
 
     # compute coherence score
-    # print(lda_model.coherence_score())
+    print(lda_model.coherence_score())
 
     # save model
     lda_model.save_model()
-
-    # predict
-    # sample texts
-    """
-    q = ""
-    with open("query.txt") as f:
-        q = f.readline()
-    print(lda_model.predict(q))
-    """
-    
-    
