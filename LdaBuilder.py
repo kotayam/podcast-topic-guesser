@@ -11,11 +11,38 @@ from gensim.corpora import Dictionary
 from gensim.models.coherencemodel import CoherenceModel
 
 class LdaBuilder:
-    
     def __init__(self, texts):
+        """
+        Construct an instance of the LdaBuilder class.
+
+        Attributes:
+            - self.texts: list of string containing descriptions from the dataset
+            - self.data_words: list of tokeninzed text
+            - self.id2word: dictionary of words
+            - self.corpus: list containing the term document frequency for every word
+            - self.lda_model: the trained LDA model
+        
+        Args:
+            texts (list): list of string containing podcast descriptions
+        """
         self.texts = texts
+        self.data_words = None
+        self.id2word = None
+        self.corpus = None
+        self.lda_model = None
     
     def __str__(self):
+        """
+        Defines the string representation of a LdaBuilder instance.
+
+        Prints the topics and its keywords produced by the model.
+
+        Args:
+            None
+        
+        Returns:
+            str: a LdaBuilder's string representation
+        """
         s = ""
         for idx, topic in self.lda_model.print_topics(num_words=15):
             s += "Topic: {} \nWords: {} \n".format(idx, topic)
@@ -23,22 +50,30 @@ class LdaBuilder:
     
     def clean_text(self):
         """
+        cleans the entire text (descriptions) from the data.
+        Calls helper function.
+
+        Args:
+            None
         
+        Returns:
+            list: a list of cleaned texts
         """
         clean_texts = [LdaBuilder.clean_text_helper(text) for text in self.texts]
         return clean_texts
 
     def clean_text_helper(text):
         """
-        Cleans the description text. 
+        Helper function for clean_text. 
+        Cleans a single description text. 
         Removes numbers, punctuation, stopwords, converts to lower case, 
         remove stopwords and whitespace.
 
         Args:
-            text (String): description to be cleaned
+            text (str): description to be cleaned
 
         Returns:
-            String: cleaned description
+            str: cleaned description
         """
         # remove numbers
         clean = re.sub(r"\d", "", text)
@@ -70,13 +105,14 @@ class LdaBuilder:
     def create_wordcloud(clean_texts, max=50):
         """
         Creates a wordcloud from a given list of texts.
+        Saves an image to file "wordcloud.jpg"
 
         Args:
-            texts(list): list of text
-            max(int): max number of word for wordcloud. 20 is default
+            clean_texts (list): list of cleaned texts
+            max (int): max number of word for wordcloud. (default: 50)
         
         Returns:
-            nothing
+            None
         """
         # combine text
         alltext = " ".join(clean_texts)
@@ -95,13 +131,14 @@ class LdaBuilder:
 
     def compute_tdf(self, clean_texts):
         """
-        Computes the term document frequecny for the given texts
+        Computes the term document frequecny for the given texts.
+        Updates the class attributes accordingly.
 
         Args:
-            texts(list): list of text
+            clean_texts (list): list of cleaned texts
 
         Returns:
-            list: list of corpus
+            None
         """
         # tokenize text
         def sent_to_words(sentences):
@@ -127,15 +164,13 @@ class LdaBuilder:
 
     def build_model(self, num_topics=10):
         """
-        Builds LDA model
+        Builds and trains the LDA model
 
         Args:
-            corpus(corpus): corpus
-            id2word(dictionary): dictionary
-            num_topics(int): number of topics to be generated
+            num_topics (int): number of topics to be generated. (default: 10)
 
         Returns:
-            ldamodel: the LDA Model
+            lda_model: the trained LDA Model
         """
         # clean text
         clean_texts = self.clean_text()
@@ -147,6 +182,7 @@ class LdaBuilder:
         self.compute_tdf(clean_texts)
 
         # build/train model
+        # set seed to 0 to reproduce same result
         lda_model = gensim.models.LdaModel(corpus=self.corpus, 
                                         id2word=self.id2word,
                                         num_topics=num_topics,
@@ -161,6 +197,13 @@ class LdaBuilder:
     
     def coherence_score(self):
         """
+        Computes the coherence score for the model.
+
+        Args:
+            None
+
+        Returns:
+            double: the coherence score
         """
         coherence_model_lda = CoherenceModel(model=self.lda_model, texts=self.data_words, dictionary=self.id2word, coherence='c_v')
         coherence_lda = coherence_model_lda.get_coherence()
@@ -168,6 +211,13 @@ class LdaBuilder:
     
     def save_model(self):
         """
+        Saves the trained model to file "lda_model"
+
+        Args:
+            None
+        
+        Returns:
+            None
         """
         self.lda_model.save("lda_model")
 
