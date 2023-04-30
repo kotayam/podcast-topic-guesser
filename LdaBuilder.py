@@ -16,7 +16,7 @@ class LdaBuilder:
     
     def __str__(self):
         s = ""
-        for idx, topic in self.lda_model.print_topics(num_words=10):
+        for idx, topic in self.lda_model.print_topics(num_words=15):
             s += "Topic: {} \nWords: {} \n".format(idx, topic)
         return s
     
@@ -24,7 +24,9 @@ class LdaBuilder:
         """
         
         """
-        return [LdaBuilder.clean_text_helper(text) for text in self.texts]
+        clean_texts = [LdaBuilder.clean_text_helper(text) for text in self.texts]
+        print(clean_texts[0:10])
+        return clean_texts
 
     def clean_text_helper(text):
         """
@@ -52,7 +54,9 @@ class LdaBuilder:
         my_dict = {"podcast", "show", "stories", "talk", 
                 "share", "weekly", "take", "hosted", 
                 "thing", "conversation", "listen", "host", 
-                "topic", "us", "get", "things", "radio"}
+                "topic", "us", "get", "things", "radio", 
+                "de", "eastern", "utc", "monday", "pm"}
+        #, "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "am"
         stop_words = set(stopwords.words('english')).union(my_dict)
         words = clean.split()
         filtered_words = [word for word in words if word.casefold() not in stop_words]
@@ -102,7 +106,6 @@ class LdaBuilder:
         # tokenize text
         def sent_to_words(sentences):
             for sentence in sentences:
-
                 yield(gensim.utils.simple_preprocess(str(sentence), deacc=True))
 
         data_words = list(sent_to_words(clean_texts))
@@ -159,6 +162,30 @@ class LdaBuilder:
         coherence_model_lda = CoherenceModel(model=self.lda_model, texts=self.data_words, dictionary=self.id2word, coherence='c_v')
         coherence_lda = coherence_model_lda.get_coherence()
         return coherence_lda
+    
+    def save_model(self):
+        """
+        """
+        self.lda_model.save("lda_model")
+
+    def predict(self, query):
+        """
+        """
+        query_data = query
+        bow_query_data = self.id2word.doc2bow(query_data.lower().split())
+        query_topic = self.lda_model[bow_query_data]
+
+        max_i = -1
+        max_p = 0
+        for idx, prob in query_topic[0]:
+            if prob > max_p:
+                max_p = prob
+                max_i = idx
+        
+        return "Topic: {}, Probability: {}".format(max_i, max_p)
+        
+
+
 
 
 if __name__ == "__main__":
@@ -176,6 +203,18 @@ if __name__ == "__main__":
     print(lda_model)
 
     # compute coherence score
-    print(lda_model.coherence_score())
+    # print(lda_model.coherence_score())
+
+    # save model
+    lda_model.save_model()
+
+    # predict
+    # sample texts
+    """
+    q = ""
+    with open("query.txt") as f:
+        q = f.readline()
+    print(lda_model.predict(q))
+    """
     
     
